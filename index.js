@@ -11,7 +11,11 @@ app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.render("index", {
+    layout: "partials/main-layout",
+    title: "Home",
+    isLogin: false,
+  });
 });
 
 app.listen(port, () => {
