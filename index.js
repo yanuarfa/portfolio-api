@@ -14,7 +14,13 @@ app.get("/", (req, res) => {
   res.render("index", {
     layout: "partials/main-layout",
     title: "Home",
-    isLogin: false,
+    isLogin: true,
+  });
+});
+
+app.get("/login", (req, res) => {
+  res.render("login", {
+    title: "Login",
   });
 });
 
