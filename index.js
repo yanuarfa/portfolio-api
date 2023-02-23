@@ -11,6 +11,10 @@ app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
+  res.redirect("/dashboard");
+});
+
+app.get("/dashboard", (req, res) => {
   res.render("index", {
     layout: "partials/main-layout",
     title: "Home",
@@ -20,6 +24,7 @@ app.get("/", (req, res) => {
 
 app.get("/login", (req, res) => {
   res.render("login", {
+    layout: "login",
     title: "Login",
   });
 });
