@@ -17,7 +17,7 @@ app.get("/", (req, res) => {
 app.get("/dashboard", (req, res) => {
   res.render("index", {
     layout: "partials/main-layout",
-    title: "Home",
+    title: "Dashboard",
     isLogin: true,
   });
 });
