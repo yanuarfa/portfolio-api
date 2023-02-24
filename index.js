@@ -22,6 +22,38 @@ app.get("/dashboard", (req, res) => {
   });
 });
 
+app.get("/tambah", (req, res) => {
+  res.render("tambah", {
+    layout: "partials/main-layout",
+    title: "Tambah Data",
+    isLogin: true,
+  });
+});
+
+app.get("/update", (req, res) => {
+  res.render("update", {
+    layout: "partials/main-layout",
+    title: "Update Data",
+    isLogin: true,
+  });
+});
+
+app.get("/hapus", (req, res) => {
+  res.render("hapus", {
+    layout: "partials/main-layout",
+    title: "Hapus Data",
+    isLogin: true,
+  });
+});
+
+app.get("/lihat", (req, res) => {
+  res.render("lihat", {
+    layout: "partials/main-layout",
+    title: "Lihat Data",
+    isLogin: true,
+  });
+});
+
 app.get("/login", (req, res) => {
   res.render("login", {
     layout: "login",
