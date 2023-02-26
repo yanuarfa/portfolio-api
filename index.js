@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const expressLayouts = require("express-ejs-layouts");
 const session = require("express-session");
+const cookieParser = require("cookie-parser");
 const app = express();
 const LocalStorage = require("node-localstorage").LocalStorage,
   localStorage = new LocalStorage("./scratch");
@@ -16,8 +17,10 @@ app.use(
     secret: "awokwokwok apaan tuh",
     resave: false,
     saveUninitialized: true,
+    cookie: { maxAge: 60000 },
   })
 );
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 function isAuthenticated(req, res, next) {
@@ -26,10 +29,15 @@ function isAuthenticated(req, res, next) {
 }
 
 app.get("/", (req, res) => {
-  res.redirect("/login");
+  console.log(req.session);
+  if (req.session) {
+    res.redirect("/dashboard");
+  } else {
+    res.redirect("/login");
+  }
 });
 
-app.get("/dashboard", isAuthenticated, (req, res) => {
+app.get("/dashboard", (req, res) => {
   res.render("index", {
     layout: "partials/main-layout",
     title: "Dashboard",
@@ -77,7 +85,24 @@ app.get("/login", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  res.json(req.body);
+  if (req.body.email === "" || req.body.password === "") res.redirect("/login");
+  if (
+    req.body.email === "admin@yanuar.my.id" &&
+    req.body.password === "admin"
+  ) {
+    res.redirect("/dashboard");
+    req.session.email = req.body.email;
+
+    // console.log(req.session);
+  } else {
+    res.redirect("/login");
+  }
+  // res.json(req.body);
+});
+
+app.get("/logout", (req, res) => {
+  req.session.destroy();
+  res.redirect("/");
 });
 
 app.listen(port, () => {
