@@ -16,7 +16,7 @@ app.use(
   session({
     secret: "awokwokwok apaan tuh",
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: { maxAge: 60000 },
   })
 );
@@ -29,6 +29,7 @@ function isAuthenticated(req, res, next) {
 }
 
 app.get("/", (req, res) => {
+  // res.send("Hello");
   console.log(req.session);
   if (req.session) {
     res.redirect("/dashboard");
@@ -84,15 +85,19 @@ app.get("/login", (req, res) => {
   });
 });
 
-app.post("/login", (req, res) => {
+app.post("/login", (req, res, next) => {
   if (req.body.email === "" || req.body.password === "") res.redirect("/login");
   if (
     req.body.email === "admin@yanuar.my.id" &&
     req.body.password === "admin"
   ) {
-    res.redirect("/dashboard");
     req.session.email = req.body.email;
+    res.redirect("/dashboard");
 
+    req.session.save(function (err) {
+      if (err) return next(err);
+      res.redirect("/");
+    });
     // console.log(req.session);
   } else {
     res.redirect("/login");
@@ -100,9 +105,18 @@ app.post("/login", (req, res) => {
   // res.json(req.body);
 });
 
-app.get("/logout", (req, res) => {
-  req.session.destroy();
-  res.redirect("/");
+app.get("/logout", (req, res, next) => {
+  req.session.email = null;
+  req.session.save(function (err) {
+    if (err) next(err);
+
+    // regenerate the session, which is good practice to help
+    // guard against forms of session fixation
+    req.session.regenerate(function (err) {
+      if (err) next(err);
+      res.redirect("/");
+    });
+  });
 });
 
 app.listen(port, () => {
