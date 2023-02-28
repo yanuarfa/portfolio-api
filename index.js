@@ -1,8 +1,14 @@
+if (process.env.NODE_ENV !== "production") {
+  require("dotenv").config();
+}
+
 const express = require("express");
 const mongoose = require("mongoose");
 const expressLayouts = require("express-ejs-layouts");
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
+const bcrypt = require("");
+const passport = require("passport");
 const app = express();
 const LocalStorage = require("node-localstorage").LocalStorage,
   localStorage = new LocalStorage("./scratch");
