@@ -3,31 +3,43 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 const express = require("express");
-const mongoose = require("mongoose");
-const expressLayouts = require("express-ejs-layouts");
-const session = require("express-session");
-const cookieParser = require("cookie-parser");
-const bcrypt = require("");
-const passport = require("passport");
 const app = express();
-const LocalStorage = require("node-localstorage").LocalStorage,
-  localStorage = new LocalStorage("./scratch");
-
+// const mongoose = require("mongoose");
+// const expressLayouts = require("express-ejs-layouts");
+const bcrypt = require("bcrypt");
+// const cookieParser = require("cookie-parser");
+const passport = require("passport");
+const flash = require("express-flash");
+const session = require("express-session");
+const { nanoid } = require("nanoid");
 const port = process.env.PORT || 5000;
 
+const initializePassport = require("./utils/passport-config");
+initializePassport(
+  passport,
+  (email) => {
+    users.find((user) => user.email === email);
+  },
+  (id) => users.find((user) => user.id === id)
+);
+
+const users = [];
+
 app.set("view engine", "ejs");
-app.use(expressLayouts);
+// app.use(expressLayouts);
+app.use(express.urlencoded({ extended: false }));
 app.use(express.static("public"));
+app.use(flash());
 app.use(
   session({
-    secret: "awokwokwok apaan tuh",
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 60000 },
   })
 );
-app.use(cookieParser());
-app.use(express.urlencoded({ extended: true }));
+app.use(passport.initialize());
+app.use(passport.session());
+// app.use(cookieParser());
 
 function isAuthenticated(req, res, next) {
   if (req.session.user) next();
@@ -35,13 +47,7 @@ function isAuthenticated(req, res, next) {
 }
 
 app.get("/", (req, res) => {
-  // res.send("Hello");
-  console.log(req.session);
-  if (req.session) {
-    res.redirect("/dashboard");
-  } else {
-    res.redirect("/login");
-  }
+  res.render("Hello");
 });
 
 app.get("/dashboard", (req, res) => {
@@ -91,24 +97,37 @@ app.get("/login", (req, res) => {
   });
 });
 
-app.post("/login", (req, res, next) => {
-  if (req.body.email === "" || req.body.password === "") res.redirect("/login");
-  if (
-    req.body.email === "admin@yanuar.my.id" &&
-    req.body.password === "admin"
-  ) {
-    req.session.email = req.body.email;
-    res.redirect("/dashboard");
+app.post(
+  "/login",
+  passport.authenticate("local", {
+    successRedirect: "/",
+    failureRedirect: "/login",
+    failureFlash: true,
+  })
+);
 
-    req.session.save(function (err) {
-      if (err) return next(err);
-      res.redirect("/");
+app.get("/register", (req, res) => {
+  res.render("register", {
+    layout: "register",
+    title: "Register",
+  });
+});
+
+app.post("/register", async (req, res) => {
+  console.log(req.body.email, req.body.password);
+  try {
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+    users.push({
+      id: nanoid(),
+      name: req.body.name,
+      email: req.body.email,
+      password: hashedPassword,
     });
-    // console.log(req.session);
-  } else {
     res.redirect("/login");
+  } catch {
+    res.redirect("/register");
   }
-  // res.json(req.body);
+  console.log(users);
 });
 
 app.get("/logout", (req, res, next) => {
